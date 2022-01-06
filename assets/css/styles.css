@@ -1,0 +1,14 @@
+.gameOver {
+    background-image: url("../images/gameOver.jpeg");
+    min-width: 500px;
+    min-width: 500px;
+}
+
+.hidden {
+    display: none;
+}
+
+
+/* .revealed {
+    display: block;
+} */
