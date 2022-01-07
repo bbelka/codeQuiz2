@@ -3,7 +3,12 @@ const timerSpan = document.getElementById('timer');
 const startBtn = document.getElementById('start');
 const questionH2 = document.getElementById('question');
 const answersOl = document.getElementById('answers');
-const gameOverImg = document.getElementById('gameOver')
+const gameOverImg = document.getElementById('gameOver');
+const initialsForm = document.getElementById('initialsForm');
+const initialsInput = document.getElementById('initialsInput');
+const scoreTable = document.getElementById('scoreTable');
+const scoreTableBody = document.getElementById('scoreTableBody');
+
 
 var questionArr = [
     { question: "What is the HTML tag under which one can write the JavaScript code?", options: ["<javascript>", "<scripted>", "<script>", "<js>"], answer: 2 },
@@ -20,15 +25,54 @@ var questionArr = [
 
 let timeLeft;
 let currentQuestion = 0;
-let score;
+let score = 0;
 
 const init = () => {
     startBtn.classList.remove('hidden');
 };
 
-const gameOverFade = () => {
+const closeHighScores = () => {
+    scoreTable.classList.add('hidden');
+    while (scoreTableBody.firstChild) scoreTableBody.removeChild(scoreTableBody.firstChild);
+    scoreTable.removeEventListener('click', closeHighScores);
+    init();
+}
 
-    setTimeout()
+const showHighScores = () => {
+    const storedHighScores = JSON.parse(localStorage.getItem('highScores'));
+    storedHighScores.forEach(score => {
+        const tr = document.createElement('tr');
+        const tdInitials = document.createElement('td');
+        const tdScore = document.createElement('td');
+        tdInitials.textContent = score.Initials;
+        tdScore.textContent = score.Score;
+        tr.appendChild(tdInitials);
+        tr.appendChild(tdScore);
+        scoreTableBody.appendChild(tr);
+        scoreTable.classList.remove('hidden');
+        scoreTable.addEventListener('click', closeHighScores)
+    })
+}
+
+const processHighScore = (e) => {
+    e.preventDefault();
+    const storedHighScores = JSON.parse(localStorage.getItem('highScores'));
+    let saveableScores = new Array;
+    if (storedHighScores) saveableScores = storedHighScores;
+    const newHighScore = {
+        Initials: initialsInput.value,
+        Score: score
+    }
+    saveableScores.push(newHighScore);
+
+    localStorage.setItem('highScores', JSON.stringify(saveableScores));
+    initialsForm.classList.add('hidden');
+    showHighScores();
+}
+
+const enterInitials = () => {
+    initialsForm.classList.remove('hidden');
+    initialsForm.addEventListener('submit', processHighScore)
 }
 
 const gameOver = () => {
@@ -40,10 +84,8 @@ const gameOver = () => {
     const startOverTimeout = setTimeout(() => {
         gameOverImg.classList.add('hidden');
         titleH1.classList.remove('hidden');
-        init();
+        enterInitials();
     }, 2000)
-    gameOverImg.addEventListener('click', init)
-
 };
 
 const displayQuestion = () => {
@@ -70,6 +112,8 @@ const playGame = () => {
     answersOl.classList.remove('hidden');
     timerSpan.classList.remove('hidden')
     timeLeft = 90;
+    timer.textContent = `Time left: ${timeLeft} seconds.`
+
     const timeInterval = setInterval(() => {
 
         if (timeLeft <= 0) {
@@ -81,7 +125,7 @@ const playGame = () => {
         };
     }, 1000);
     displayQuestion();
-}
+};
 
 const checkAnswer = (event) => {
     if (event.target.dataset.index == questionArr[currentQuestion].answer) {
@@ -90,13 +134,13 @@ const checkAnswer = (event) => {
     } else {
         console.log("wrong");
         ++score;
-        timeLeft -= 5;
+        timeLeft -= 10;
         displayQuestion();
     }
     while (answersOl.firstChild) answersOl.removeChild(answersOl.firstChild);
     ++currentQuestion;
     displayQuestion();
-}
+};
 
 startBtn.addEventListener('click', playGame);
 answersOl.addEventListener('click', checkAnswer);
